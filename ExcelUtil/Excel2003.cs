@@ -24,7 +24,7 @@ namespace ExcelUtil
         /// <returns></returns>
         protected override void InitWorkbook(FileStream fs)
         {
-            workbook = new HSSFWorkbook(fs);
+            workbook = fs!= null ? new HSSFWorkbook(fs) : new HSSFWorkbook();
         }
     }
 }

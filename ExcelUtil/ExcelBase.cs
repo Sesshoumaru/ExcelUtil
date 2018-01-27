@@ -89,12 +89,12 @@ namespace ExcelUtil
         /// <returns></returns>
         public int WirteDataTable(DataTable dataTable, string sheetName, bool ifContainCaption)
         {
-            fileStream = new FileStream(FileName, FileMode.OpenOrCreate, FileAccess.ReadWrite);
-            InitWorkbook(fileStream);
+            var memoryStream = new MemoryStream();    //创建内存流用于写入文件       
+            InitWorkbook(null);
 
             var sheet = workbook.GetSheet(sheetName) ?? workbook.CreateSheet(sheetName);
 
-            int totalCount = 0;
+            var totalCount = 0;
             if (ifContainCaption) //写入DataTable的列名
             {
                 var row = sheet.CreateRow(0);
@@ -106,7 +106,6 @@ namespace ExcelUtil
                         : caption;
                     row.CreateCell(columnIndex).SetCellValue(caption);
                 }
-                totalCount = 1;
             }
 
             int rowIndex;
@@ -121,7 +120,13 @@ namespace ExcelUtil
                 }
                 ++totalCount;
             }
-            workbook.Write(fileStream);
+            workbook.Write(memoryStream);
+            memoryStream.Flush();
+            memoryStream.Position = 0;
+
+            FileStream dumpFile = new FileStream(FileName, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite);
+            memoryStream.WriteTo(dumpFile);//将流写入文件
+
             return totalCount;
         }
 
@@ -153,7 +158,7 @@ namespace ExcelUtil
                         var cell = firstRow.GetCell(rowIndex);
                         if (cell != null)
                         {
-                            var cellValue = cell.ToString();
+                            var cellValue = cell.ToString().Trim();
                             if (!string.IsNullOrWhiteSpace(cellValue))
                             {
                                 var column = new DataColumn(cellValue);
@@ -181,7 +186,7 @@ namespace ExcelUtil
                     {
                         var cell = row.GetCell(map.Value);
                         {
-                            dataRow[map.Key] = cell != null ? cell.ToString() : "";
+                            dataRow[map.Key] = cell != null ? cell.ToString().Trim() : "";
                         }
                     }
                     data.Rows.Add(dataRow);

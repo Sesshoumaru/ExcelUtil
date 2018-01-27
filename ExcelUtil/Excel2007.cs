@@ -23,7 +23,7 @@ namespace ExcelUtil
         /// <returns></returns>
         protected override void InitWorkbook(FileStream fs)
         {
-            workbook = new XSSFWorkbook(fs);
+            workbook = fs!= null ? new XSSFWorkbook(fs) : new XSSFWorkbook();
         }
     }
 }
